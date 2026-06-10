@@ -120,11 +120,18 @@
               class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
             >
               <li>
-                <a href="/users/profile" class="justify-between">
-                  Profile
-                  <span class="badge">New</span>
-                </a>
-              </li>
+  <% if (user && user.role === "admin") { %>
+    <a href="/users/profile" class="justify-between">
+      Profile
+      <span class="badge badge-primary">Admin</span>
+    </a>
+  <% } else { %>
+    <a href="/users/profile" class="justify-between">
+      Profile
+      <span class="badge">New</span>
+    </a>
+  <% } %>
+</li>
               <li>
                 <form action="/users/logout" method="post">
                   <button type="submit" class="text-black">Logout</button>

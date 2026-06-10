@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="lemonade">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile - Notebook</title>
+
+    <!-- DaisyUI -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <div class="navbar bg-base-100 border-b border-black">
+      <div class="flex-1">
+        <a href="/" class="btn btn-ghost text-xl"> Notebook </a>
+      </div>
+
+      <div class="flex-none">
+        <form action="/users/logout" method="POST">
+          <button class="btn btn-outline btn-error">Logout</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="flex gap-8 p-10 min-h-[80vh]">
+
+  <!-- LEFT SIDE : PROFILE CARD -->
+  <div class="flex justify-center items-center">
+
+    <div class="card w-96 bg-base-100 shadow-2xl">
+
+      <div class="card-body items-center text-center">
+
+        <div class="avatar">
+          <div
+            class="w-28 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2"
+          >
+            <img
+              src="https://pngfre.com/wp-content/uploads/anime-poster.png"
+            />
+          </div>
+        </div>
+
+        <h2 class="card-title mt-4">
+          <%= user.fullName %>
+        </h2>
+
+        <p class="text-gray-500">
+          <%= user.email %>
+        </p>
+
+        <% if (user.role === "admin") { %>
+          <div class="badge badge-primary mt-3">
+            Admin
+          </div>
+        <% } %>
+
+        <div class="divider"></div>
+
+        <div class="w-full">
+
+          <div class="flex justify-between py-2">
+            <span class="font-semibold">
+              User ID
+            </span>
+
+            <span class="truncate">
+              <%= user._id %>
+            </span>
+          </div>
+
+          <div class="flex justify-between py-2">
+            <span class="font-semibold">
+              Joined
+            </span>
+
+            <span>
+              <%= user.createdAt.toDateString() %>
+            </span>
+          </div>
+
+        </div>
+
+        <div class="card-actions mt-5">
+          <a href="/notes" class="btn btn-primary">
+            My Notes
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- RIGHT SIDE : ADMIN USER PANEL -->
+  <% if (user.role === "admin") { %>
+
+    <div class="w-full">
+
+      <h1 class="text-3xl font-bold mb-5">
+        Manage Users
+      </h1>
+
+      <div
+        class="max-h-[700px] overflow-y-auto flex flex-col gap-5 pr-2"
+      >
+
+        <% users.forEach(u => { %>
+
+          <% if (u._id.toString() !== user._id.toString()) { %>
+
+            <div class="card bg-base-100 shadow-xl">
+
+              <div class="card-body">
+
+                <div class="flex justify-between items-center">
+
+                  <div>
+
+                    <h2 class="card-title">
+                      <%= u.fullName %>
+                    </h2>
+
+                    <p class="text-gray-500">
+                      <%= u.email %>
+                    </p>
+
+                    <div class="mt-2">
+
+                      <% if (u.role === "admin") { %>
+
+                        <div class="badge badge-primary">
+                          Admin
+                        </div>
+
+                      <% } else { %>
+
+                        <div class="badge badge-secondary">
+                          User
+                        </div>
+
+                      <% } %>
+
+                    </div>
+
+                  </div>
+
+                  <div class="flex gap-2">
+
+                    <a
+                      href="/users/admin/users/<%= u._id %>/notes"
+                      class="btn btn-primary btn-sm"
+                    >
+                      View Notes
+                    </a>
+
+                    <form
+  action="/users/<%= u._id %>/delete"
+  method="POST"
+  onsubmit="return confirm('Are you sure you want to delete this user and all of their notes?')"
+>
+  <button class="btn btn-error btn-sm">
+    Delete
+  </button>
+</form>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          <% } %>
+
+        <% }) %>
+
+      </div>
+
+    </div>
+
+  <% } %>
+
+</div>
+  </body>
+</html>

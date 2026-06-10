@@ -1,75 +1,103 @@
 import Note from "../models/notes.model.js";
+import asyncHandler from "../middlewares/asyncHandler.js";
+// GET ALL NOTES CTRL
+export const handleGetAllNotes = asyncHandler(async (req, res) => {
+  const notes = await Note.find({
+    createdBy: req.user._id,
+  });
 
-// 👉 GET ALL NOTES CTRL
-export const handleGetAllNotes = async (req, res) => {
-  try {
-    const notes = await Note.find({ createdBy: req.user.userId });
-    res.render("notes", { notes, authenticated: req.isAuthenticated });
-  } catch (error) {
-    res.status(500).json({ msg: "Error fetching notes !!", error });
-  }
-};
+  res.render("notes", {
+    notes,
+    authenticated: req.isAuthenticated,
+  });
+});
 
 // 👉 GET SINGLE NOTE BY ID CTRL
-export const handleGetNoteById = async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.noteId);
+export const handleGetNoteById = asyncHandler(async (req, res) => {
+  const note = await Note.findOne({
+    _id: req.params.noteId,
+    createdBy: req.user._id,
+  });
 
-    if (!note) return res.status(404).json({ msg: "No note found !!" });
-
-    res.render("singleNote", { note });
-  } catch (error) {
-    res.status(500).json({ msg: "Error fetching notes !!", error });
+  if (!note) {
+    res.status(404);
+    throw new Error("No note found !!");
   }
-};
+
+  res.render("singleNote", {
+    note,
+  });
+});
 
 // 👉 CREATE A NEW NOTE CTRL
-export const handleCreateNote = async (req, res) => {
-  try {
-    const { title, description } = req.body;
+export const handleCreateNote = asyncHandler(async (req, res) => {
+  const { title, description } = req.body;
 
-    if (!title || !description)
-      res.status(400).json({ msg: "All fields are required !!" });
-
-    await Note.create({
-      title,
-      description,
-      createdBy: req.user.userId,
-    });
-
-    res.redirect("/notes");
-  } catch (error) {
-    res.status(500).json({ msg: "Error creating notes !!", error });
+  if (!title || !description) {
+    res.status(400);
+    throw new Error("All fields are required !!");
   }
-};
 
+  const note = await Note.create({
+    title,
+    description,
+    createdBy: req.user._id,
+  });
+
+  res.redirect("/notes");
+});
 // 👉 DELETE NOTE CTRL
-export const handleDeleteNote = async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.noteId);
-    if (!note) res.status(404).json({ msg: "No note found !!" });
+export const handleDeleteNote = asyncHandler(async (req, res) => {
+  const note = await Note.findOneAndDelete({
+    _id: req.params.noteId,
+    createdBy: req.user._id,
+  });
 
-    await Note.findByIdAndDelete(req.params.noteId);
-    res.redirect("/notes");
-  } catch (error) {
-    res.status(500).json({ msg: "Error delete a notes !!", error });
+  if (!note) {
+    res.status(404);
+    throw new Error("No note found !!");
   }
-};
+
+  res.redirect("/notes");
+});
 
 // RENDER UPDATE PAGE
-export const handleRenderEditNote = async (req, res) => {
-  const note = await Note.findById(req.params.noteId);
-  if (!note) res.status(404).json({ msg: "No note found !!" });
+export const handleRenderEditNote = asyncHandler(async (req, res) => {
+  const note = await Note.findOne({
+    _id: req.params.noteId,
+    createdBy: req.user._id,
+  });
 
-  res.render("editNote", { note });
-};
+  if (!note) {
+    res.status(404);
+    throw new Error("No note found !!");
+  }
+
+  res.render("editNote", {
+    note,
+  });
+});
 
 // 👉 UPDATE NOTE CTRL
-export const handleUpdateNote = async (req, res) => {
-  try {
-    await Note.findByIdAndUpdate(req.params.noteId, req.body, { new: true });
-    res.redirect("/notes");
-  } catch (error) {
-    res.status(500).json({ msg: "Error updating a note !!", error });
+export const handleUpdateNote = asyncHandler(async (req, res) => {
+  const { title, description } = req.body;
+
+  const note = await Note.findOneAndUpdate(
+    {
+      _id: req.params.noteId,
+      createdBy: req.user._id,
+    },
+    { title, description },
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
+
+  if (!note) {
+    res.status(404);
+    throw new Error("No note found !!");
   }
-};
+
+  res.redirect("/notes");
+});

@@ -1,4 +1,5 @@
 import express from "express";
+
 import {
   handleCreateNote,
   handleDeleteNote,
@@ -7,27 +8,44 @@ import {
   handleUpdateNote,
   handleRenderEditNote,
 } from "../controllers/notes.controllers.js";
+
 import { authenticated } from "../middlewares/authenticated.js";
 import { setAuthStatus } from "../middlewares/setAuthStatus.js";
+
+import validate from "../middlewares/validation.middleware.js";
+
+import { noteValidator } from "../validators/note.validator.js";
 
 const router = express.Router();
 
 // 👉 GET ALL NOTES        /notes
 router.get("/", authenticated, setAuthStatus, handleGetAllNotes);
 
-// 👉 CREATE NEW NOTES     /notes/create
-router.post("/create", authenticated, handleCreateNote);
+// 👉 CREATE NEW NOTE      /notes/create
+router.post(
+  "/create",
+  authenticated,
+  noteValidator,
+  validate,
+  handleCreateNote,
+);
+
+// 👉 RENDER EDIT PAGE     /notes/edit/:noteId
+router.get("/edit/:noteId", authenticated, handleRenderEditNote);
+
+// 👉 DELETE NOTE          /notes/delete/:noteId
+router.post("/delete/:noteId", authenticated, handleDeleteNote);
+
+// 👉 UPDATE NOTE          /notes/edit/:noteId
+router.post(
+  "/edit/:noteId",
+  authenticated,
+  noteValidator,
+  validate,
+  handleUpdateNote,
+);
 
 // 👉 GET NOTE BY ID       /notes/:noteId
 router.get("/:noteId", authenticated, handleGetNoteById);
-
-// 👉 DELETE A NOTE        /notes/delete/:noteId
-router.get("/delete/:noteId", authenticated, handleDeleteNote);
-
-// 👉 UPDATE A NOTE        /notes/edit/:noteId
-router.get("/edit/:noteId", authenticated, handleRenderEditNote);
-
-// 👉 UPDATE A NOTE        /notes/edit/:noteId
-router.post("/edit/:noteId", authenticated, handleUpdateNote);
 
 export default router;
